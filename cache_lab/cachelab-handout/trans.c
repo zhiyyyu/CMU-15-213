@@ -20,8 +20,169 @@ int is_transpose(int M, int N, int A[N][M], int B[M][N]);
  *     be graded. 
  */
 char transpose_submit_desc[] = "Transpose submission";
+// s = 5, b = 5, E = 1
 void transpose_submit(int M, int N, int A[N][M], int B[M][N])
 {
+    if(N == 32){
+        int t1, t2, t3, t4, t5, t6, t7, t8;
+        // block: 8*8
+        for(int i=0;i<N;i+=8){
+            for(int j=0;j<M;j+=8){
+                // for(int k=i;k<i+8;k++){
+                //     for(int m=j;m<j+8;m++){
+                //         B[m][k] = A[k][m];
+                //     }
+                // }
+                for(int k=j;k<j+8;k++){
+                    t1 = A[i+0][k];
+                    t2 = A[i+1][k];
+                    t3 = A[i+2][k];
+                    t4 = A[i+3][k];
+                    t5 = A[i+4][k];
+                    t6 = A[i+5][k];
+                    t7 = A[i+6][k];
+                    t8 = A[i+7][k];
+                    B[k][i+0] = t1;
+                    B[k][i+1] = t2;
+                    B[k][i+2] = t3;
+                    B[k][i+3] = t4;
+                    B[k][i+4] = t5;
+                    B[k][i+5] = t6;
+                    B[k][i+6] = t7;
+                    B[k][i+7] = t8;
+                }
+            }
+        }
+    } else if(N == 64){
+        // int t1, t2, t3, t4, t5, t6, t7, t8;
+        // // block: 4*8
+        // for(int i=0;i<N;i+=4){
+        //     for(int j=0;j<M;j+=8){
+        //         for(int k=i;k<i+4;k++){
+        //             t1 = A[k][j+0];
+        //             t2 = A[k][j+1];
+        //             t3 = A[k][j+2];
+        //             t4 = A[k][j+3];
+        //             t5 = A[k][j+4];
+        //             t6 = A[k][j+5];
+        //             t7 = A[k][j+6];
+        //             t8 = A[k][j+7];
+        //             // 转置当前4*4块的值
+        //             B[j+0][k] = t1;
+        //             B[j+1][k] = t2;
+        //             B[j+2][k] = t3;
+        //             B[j+3][k] = t4;
+        //             // 暂存后面一个4*4
+        //             B[j+3][k+4] = t5;
+        //             B[j+2][k+4] = t6;
+        //             B[j+1][k+4] = t7;
+        //             B[j+0][k+4] = t8;
+        //         }
+        //         // for(int k=i+4;k<i+8;k++){
+        //         //     t1 = A[k][j+0];
+        //         //     t2 = A[k][j+1];
+        //         //     t3 = A[k][j+2];
+        //         //     t4 = A[k][j+3];
+        //         //     t5 = A[k][j+4];
+        //         //     t6 = A[k][j+5];
+        //         //     t7 = A[k][j+6];
+        //         //     t8 = A[k][j+7];
+        //         //     // 转置当前4*4块的值
+        //         //     B[j+0][k] = t1;
+        //         //     B[j+1][k] = t2;
+        //         //     B[j+2][k] = t3;
+        //         //     B[j+3][k] = t4;
+        //         //     // 转置当前4*4块的值
+        //         //     B[j+0][k+4] = t5;
+        //         //     B[j+1][k+4] = t6;
+        //         //     B[j+2][k+4] = t7;
+        //         //     B[j+3][k+4] = t8;
+        //         // }
+        //     }
+        // }
+        // // for(int i=0;i<N;i+=8){
+        // //     for(int j=0;j<M;j+=8){
+        // //         for(int k=i;k<i+4;k++){
+        // //             t1 = B[k][j+4];
+        // //             t2 = B[k][j+5];
+        // //             t3 = B[k][j+6];
+        // //             t4 = B[k][j+7];
+        // //             B[2*i-k+7][j+0] = t1;
+        // //             B[2*i-k+7][j+1] = t2;
+        // //             B[2*i-k+7][j+2] = t3;
+        // //             B[2*i-k+7][j+3] = t4;
+        // //         }
+        // //     }
+        // // }
+        for (int i = 0; i < N; i += 8)
+        {
+            for (int j = 0; j < M; j += 8)
+            {
+                for (int k = i; k < i + 4; ++k)
+                {
+                /* 读取1 2，暂时放在左下角1 2 */
+                    int temp_value0 = A[k][j];
+                    int temp_value1 = A[k][j+1];
+                    int temp_value2 = A[k][j+2];
+                    int temp_value3 = A[k][j+3];
+                    int temp_value4 = A[k][j+4];
+                    int temp_value5 = A[k][j+5];
+                    int temp_value6 = A[k][j+6];
+                    int temp_value7 = A[k][j+7];
+                
+                    B[j][k] = temp_value0;
+                    B[j+1][k] = temp_value1;
+                    B[j+2][k] = temp_value2;
+                    B[j+3][k] = temp_value3;
+                /* 逆序放置 */
+                    B[j][k+4] = temp_value7;
+                    B[j+1][k+4] = temp_value6;
+                    B[j+2][k+4] = temp_value5;
+                    B[j+3][k+4] = temp_value4;
+                }
+                for (int l = 0; l < 4; ++l)
+                {
+                /* 按列读取 */
+                    int temp_value0 = A[i+4][j+3-l];
+                    int temp_value1 = A[i+5][j+3-l];
+                    int temp_value2 = A[i+6][j+3-l];
+                    int temp_value3 = A[i+7][j+3-l];
+                    int temp_value4 = A[i+4][j+4+l];
+                    int temp_value5 = A[i+5][j+4+l];
+                    int temp_value6 = A[i+6][j+4+l];
+                    int temp_value7 = A[i+7][j+4+l];
+                
+                /* 从下向上按行转换2到3 */
+                    B[j+4+l][i] = B[j+3-l][i+4];
+                    B[j+4+l][i+1] = B[j+3-l][i+5];
+                    B[j+4+l][i+2] = B[j+3-l][i+6];
+                    B[j+4+l][i+3] = B[j+3-l][i+7];
+                /* 将3 4放到正确的位置 */
+                    B[j+3-l][i+4] = temp_value0;
+                    B[j+3-l][i+5] = temp_value1;
+                    B[j+3-l][i+6] = temp_value2;
+                    B[j+3-l][i+7] = temp_value3;
+                    B[j+4+l][i+4] = temp_value4;
+                    B[j+4+l][i+5] = temp_value5;
+                    B[j+4+l][i+6] = temp_value6;
+                    B[j+4+l][i+7] = temp_value7;
+                } 
+            }
+        }
+
+    } else if(N == 67){
+        // block: 8*8
+        for(int i=0;i<N;i+=16){
+            for(int j=0;j<M;j+=16){
+                for(int k=i;k<i+16&&k<N;k++){
+                    for(int m=j;m<j+16&&m<M;m++){
+                        B[m][k] = A[k][m];
+                    }
+                }
+            }
+        }
+    }
+    return;
 }
 
 /* 
@@ -82,3 +243,16 @@ int is_transpose(int M, int N, int A[N][M], int B[M][N])
     return 1;
 }
 
+// int main(){
+//     int A[64][64], B[64][64];
+//     for(int i=0;i<64;i++){
+//         for(int j=0;j<64;j++) A[i][j] = i*100+j;
+//     }
+//     transpose_submit(64, 64, A, B);
+    
+//     for(int i=0;i<64;i++){
+//         for(int j=0;j<64;j++) printf("%d ", B[i][j]);
+//         printf("\n");
+//     }
+//     return 0;
+// }
